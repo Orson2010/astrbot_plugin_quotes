@@ -1,0 +1,71 @@
+{
+  "storage": {
+    "description": "数据存储根目录（留空则自动使用 AstrBot 的 data 目录）",
+    "type": "string",
+    "default": ""
+  },
+  "global_mode": {
+    "description": "全局模式：开启后随机语录在所有群/私聊范围内共享（关闭则按会话隔离）",
+    "type": "bool",
+    "default": false
+  },
+  "avatar_provider": {
+    "description": "头像提供源：qlogo 或 platform（platform 需 Napcat 权限）",
+    "type": "string",
+    "options": ["qlogo", "platform"],
+    "default": "qlogo"
+  },
+  "image": {
+    "description": "语录图样式配置",
+    "type": "object",
+    "items": {
+      "width": { "type": "int", "default": 1280, "description": "图片宽度(px)" },
+      "height": { "type": "int", "default": 427, "description": "图片高度(px)" },
+      "bg_color": { "type": "string", "default": "#000", "description": "右侧背景色" },
+      "text_color": { "type": "string", "default": "#fff", "description": "文字颜色" },
+      "font_family": { "type": "string", "default": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', Arial, sans-serif" }
+    }
+  },
+  "poke": {
+    "description": "戳一戳功能配置",
+    "type": "object",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "是否启用戳一戳随机语录功能"
+      },
+      "probability": {
+        "type": "float",
+        "default": 0.3,
+        "description": "戳一戳触发语录的概率（0-1之间，0.3表示30%概率）"
+      },
+      "group_whitelist": {
+        "type": "list",
+        "default": [],
+        "description": "允许触发戳一戳语录的群号白名单（留空则所有群都允许）"
+      }
+    }
+  },
+  "performance": {
+    "description": "性能相关配置",
+    "type": "object",
+    "items": {
+      "text_mode": {
+        "type": "bool",
+        "default": false,
+        "description": "文本模式：开启后仅发送纯文本语录（关闭则生成图片语录）"
+      },
+      "render_cache": {
+        "type": "bool",
+        "default": true,
+        "description": "渲染缓存：开启后可提升重复语录的发送速度"
+      },
+      "cache_retention_days": {
+        "type": "int",
+        "default": 3,
+        "description": "渲染缓存保留天数（0为不自动清理，默认3天）"
+      }
+    }
+  }
+}

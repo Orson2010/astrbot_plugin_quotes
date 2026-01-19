@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: {{ width }}px; min-height: {{ min_height }}px; overflow: hidden; }
+        .game-container {
+            width: {{ width }}px; min-height: {{ min_height }}px;
+            background: linear-gradient(135deg, {{ bg_color }} 0%, #16213e 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Minecraft', 'Unifont'; position: relative; overflow: hidden;
+            padding: 40px 0;
+        }
+        .game-container::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px),
+                            repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px);
+            opacity: 0.6; z-index: 0;
+        }
+        .particle { position: absolute; background: rgba(255, 255, 255, 0.6); border-radius: 50%; pointer-events: none; z-index: 0; }
+        .particle:nth-child(1) { width: 4px; height: 4px; top: 20%; left: 15%; animation: float 8s ease-in-out infinite; }
+        .particle:nth-child(2) { width: 3px; height: 3px; top: 60%; left: 80%; animation: float 10s ease-in-out infinite 2s; }
+        .particle:nth-child(3) { width: 5px; height: 5px; top: 40%; left: 90%; animation: float 12s ease-in-out infinite 4s; }
+        @keyframes float { 0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; } 50% { transform: translateY(-30px) translateX(20px); opacity: 0.8; } }
+        .dialog-box {
+            position: relative; z-index: 1; width: 90%; max-width: 1100px;
+            background: linear-gradient(145deg, rgba(30, 30, 46, 0.95), rgba(24, 24, 37, 0.98));
+            border: 3px solid rgba(255, 255, 255, 0.15); border-radius: 24px;
+            padding: 50px 60px 80px 180px;
+            margin: 20px 0;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            min-height: 200px;
+        }
+        .dialog-box::before, .dialog-box::after { content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid #4a9eff; }
+        .dialog-box::before { top: -3px; left: -3px; border-right: none; border-bottom: none; box-shadow: -2px -2px 8px rgba(74, 158, 255, 0.4); }
+        .dialog-box::after { bottom: -3px; right: -3px; border-left: none; border-top: none; box-shadow: 2px 2px 8px rgba(74, 158, 255, 0.4); }
+        .avatar-frame {
+            position: absolute; left: 40px; top: 50%; transform: translateY(-50%);
+            width: 110px; height: 110px; padding: 5px;
+            background: linear-gradient(135deg, #4a9eff 0%, #7b68ee 100%);
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            animation: avatar-glow 3s ease-in-out infinite;
+        }
+        @keyframes avatar-glow {
+            0%, 100% { box-shadow: 0 8px 25px rgba(74, 158, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 8px 35px rgba(74, 158, 255, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.3); }
+        }
+        .avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid rgba(30, 30, 46, 0.9); }
+        .name-tag {
+            display: inline-block; background: linear-gradient(135deg, #4a9eff 0%, #7b68ee 100%);
+            color: white; padding: 8px 24px 8px 36px; border-radius: 20px;
+            font-size: 22px; font-weight: 600; margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.4); letter-spacing: 1px; position: relative;
+        }
+        .name-tag::before { content: '▶'; position: absolute; left: 12px; top: 56%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.8); font-size: 14px; animation: blink 1.5s ease-in-out infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .text-content { position: relative; }
+        .quote-text {
+            color: {{ text_color }}; font-size: 30px; line-height: 1.9; font-weight: 400; letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); position: relative; padding-left: 20px;
+            word-wrap: break-word; overflow-wrap: break-word;
+        }
+        .quote-text::after {
+            content: ''; display: inline-block; width: 3px; height: 35px; background: #4a9eff;
+            margin-left: 6px; vertical-align: -6px; animation: cursor-blink 1s step-end infinite;
+        }
+        @keyframes cursor-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .quote-mark { position: absolute; font-family: Georgia, serif; font-size: 80px; color: rgba(74, 158, 255, 0.15); line-height: 1; font-weight: bold; }
+        .quote-mark.open { top: -15px; left: -10px; }
+        .quote-mark.close { bottom: -30px; right: 10px; }
+        .meta-info {
+            position: absolute; bottom: 20px; right: 30px;
+            color: rgba(255, 255, 255, 0.4); font-size: 14px; font-weight: 400;
+            text-align: right; line-height: 1.6;
+        }
+        .meta-info div { margin-bottom: 4px; }
+        .status-indicator { position: absolute; top: 20px; right: 30px; display: flex; gap: 8px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #4a9eff; box-shadow: 0 0 10px rgba(74, 158, 255, 0.8); animation: pulse-dot 2s ease-in-out infinite; }
+        .status-dot:nth-child(2) { animation-delay: 0.3s; }
+        .status-dot:nth-child(3) { animation-delay: 0.6s; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="dialog-box">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <div class="status-dot"></div>
+                <div class="status-dot"></div>
+            </div>
+            <div class="avatar-frame">
+                <img src="{{ avatar_url }}" class="avatar" alt="avatar" />
+            </div>
+            <div class="name-tag">{{ name }}</div>
+            <div class="text-content">
+                <div class="quote-mark open">"</div>
+                <div class="quote-text">{{ text }}</div>
+                <div class="quote-mark close">"</div>
+            </div>
+            <div class="meta-info">
+                <div>来源: {{ group_info }}</div>
+                <div>QQ: {{ qq_num }}</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 动态调整容器高度
+        function adjustContainerHeight() {
+            const dialog = document.querySelector('.dialog-box');
+            const container = document.querySelector('.game-container');
+            if (dialog && container) {
+                const dialogRect = dialog.getBoundingClientRect();
+                const minHeight = {{ min_height }};
+                const newHeight = Math.max(dialogRect.height + 80, minHeight);
+                container.style.height = newHeight + 'px';
+                
+                // 更新视口高度以便截图
+                document.body.style.height = newHeight + 'px';
+                document.documentElement.style.height = newHeight + 'px';
+            }
+        }
+        
+        // 初始调整
+        adjustContainerHeight();
+        
+        // 确保图片加载后再次调整
+        const avatarImg = document.querySelector('.avatar');
+        if (avatarImg) {
+            avatarImg.onload = adjustContainerHeight;
+        }
+        
+        // 防抖处理，避免频繁调整
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustContainerHeight, 100);
+        });
+    </script>
+</body>
+</html>
