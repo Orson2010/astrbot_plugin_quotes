@@ -1,5 +1,5 @@
 name: astrbot_plugin_quotes
-desc: qq群聊记录群友说过的话，语录插件
+desc: 支持文本、图片、视频语录，并且拥有美观的文本转图片，为单独模板html文件，可修改。未来可能会支持转发消息（node）
 version: v2.0.0
 author: 薄暝 Re Aug
 repo: https://github.com/Orson2010/astrbot_plugin_quotes
